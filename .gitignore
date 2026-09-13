@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dados e artefatos gerados
+data/*
+!data/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+models/
+mlruns/
+*.joblib
+*.pkl
+
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+service-account*.json
+
+# AWS e infraestrutura
+.aws/
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Sistema operacional e editor
+.DS_Store
+.idea/
+.vscode/
+
