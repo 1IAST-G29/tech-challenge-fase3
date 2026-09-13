@@ -117,7 +117,7 @@ gerados não devem entrar no Git.
 
 | Necessidade | Escolha | Motivo |
 | --- | --- | --- |
-| Linguagem | Python 3.11 | Bom suporte a dados e ML. |
+| Linguagem | Python 3.12 | Bom suporte a dados e ML. |
 | Dados locais | Pandas e PyArrow; PySpark somente na criação/validação da Gold | Simples para amostras; compatível com Parquet e Glue. |
 | Machine Learning | scikit-learn | Possui pipeline, validação, transformação e métricas em uma solução madura. |
 | Modelos candidatos | DummyClassifier, Regressão Logística e HistGradientBoosting/Random Forest | Linha de base interpretável e alternativas não lineares para comparar. |

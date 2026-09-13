@@ -42,10 +42,10 @@ associados às previsões e apresentar resultados agregados por município, UF e
 
 ## Como começar localmente
 
-Requer Python 3.11 ou superior.
+Requer Python 3.12.
 
 ~~~bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
