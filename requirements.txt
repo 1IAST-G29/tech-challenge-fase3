@@ -1,6 +1,7 @@
 # Dados e Machine Learning
 pandas==2.2.3
 pyarrow==18.1.0
+pyspark==3.5.1
 scikit-learn==1.6.1
 numpy==2.2.2
 
