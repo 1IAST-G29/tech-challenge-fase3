@@ -358,29 +358,15 @@ if __name__ == "__main__":
         SparkSession.builder
         .appName("bronze-ingestion")
         .config("spark.jars", "/Users/pedrolavor/Workspace/tech-challenge-fase3/src/data/pipeline/bronze/spark-3.5-bigquery-0.45.0.jar")
-        # Força o Spark a escutar apenas na máquina local (evita problemas de rede)
         .config("spark.driver.host", "localhost") \
         .master("local[*]")
         .getOrCreate()
     )
 
-    # dataframe = bd.read_table(
-    #     dataset_id="br_inep_avaliacao_alfabetizacao",
-    #     table_id="uf",
-    #     billing_project_id="pos-tech-ai-scientist",
-    #     query_project_id="basedosdados",
-    # )
-    # arguments = parse_args()
-
-    # reader = spark.read.format("bigquery")
-    # for key, value in arguments.spark_option.items():
-    #     reader = reader.option(key, value)
-
-    # full_resource_path = f"{GCP_PROJECT_DATASET}.uf"
-    # dataframe = reader.option("table", full_resource_path).load()
-
     arguments = parse_args()
     source_options = parse_source_options(arguments.source_option)
+    spark_options = parse_source_options(arguments.spark_option)
+    spark = create_spark_session(arguments.runtime, spark_options)
     resource_retriever = SparkResourceRetriever(
         sparkSession=spark,
         format="bigquery",
