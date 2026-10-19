@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+import json
+import logging
 from datetime import UTC, datetime
 from hashlib import sha256
-import json
 from pathlib import Path
-import re
-from typing import Mapping, Protocol
+from typing import Mapping
 from uuid import uuid4
-import logging
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -352,7 +350,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    import basedosdados as bd
 
     spark = (
         SparkSession.builder

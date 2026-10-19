@@ -1,7 +1,8 @@
-import truststore
-import requests
 from pathlib import Path
 from zipfile import ZipFile
+
+import requests
+import truststore
 
 truststore.inject_into_ssl()
 
