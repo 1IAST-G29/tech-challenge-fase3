@@ -1,0 +1,20 @@
+{
+  "alvo_por_ano": {
+    "2024": 0.5221,
+    "2025": 0.5862
+  },
+  "alvo_por_rede": {
+    "2": 0.5537,
+    "3": 0.5551,
+    "4": 0.64
+  },
+  "alvo_por_regiao": {
+    "1": 0.474,
+    "2": 0.5673,
+    "3": 0.5605,
+    "4": 0.5387,
+    "5": 0.6215
+  },
+  "auc_proficiencia_mesmo_ano_(LEAKAGE)": 1.0,
+  "ponto_de_corte_proficiencia": 743.0
+}

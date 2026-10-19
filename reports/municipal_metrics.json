@@ -1,0 +1,18 @@
+{
+  "corr_prevista_vs_real_municipio": 0.6946959464107619,
+  "kmeans_silhouette": {
+    "3": 0.17651600458679326,
+    "4": 0.1585800252205222,
+    "5": 0.15881938331041032,
+    "6": 0.15413392217843547,
+    "7": 0.1543546714351098
+  },
+  "k_escolhido": 3,
+  "meta_limiar_assumido": 0.6,
+  "taxa_municipios_abaixo_meta": {
+    "2024": 0.5474120900829712,
+    "2025": 0.3493860322333078
+  },
+  "auc_abaixo_meta_logistic": 0.8362200488387793,
+  "auc_abaixo_meta_hgb": 0.846918167433224
+}

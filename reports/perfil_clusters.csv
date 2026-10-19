@@ -1,0 +1,4 @@
+cluster,mun_lag_alfabetizado,mun_lag_vl_media,uf_lag_taxa_alfab,fundeb_total,fundeb_por_matricula,cen_rural,cen_alunos_por_turma_ai,cen_alunos_por_docente_ai,cen_IN_INTERNET,cen_IN_BIBLIOTECA,cen_IN_ALIMENTACAO,cen_pct_preta_parda_indigena,escola_lag_taxa_alfab,cen_mat_fund_ai_por_escola,regiao,taxa_real,n_alunos,n_municipios
+0,79.331,773.931,69.024,16.339,11973.587,0.595,19.634,15.759,0.937,0.315,0.999,0.73,0.672,105.341,2.637,0.769,185.599,1133
+1,66.721,755.355,61.73,16.357,10688.115,0.197,20.219,15.483,0.994,0.564,0.999,0.369,0.552,220.049,3.674,0.672,537.585,2449
+2,45.588,734.34,47.63,17.172,13378.193,0.674,22.294,19.795,0.862,0.181,0.999,0.836,0.452,101.56,1.81,0.567,421.948,1630
