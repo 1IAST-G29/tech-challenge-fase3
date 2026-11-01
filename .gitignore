@@ -21,6 +21,8 @@ data/*
 !data/.gitkeep
 reports/figures/*
 !reports/figures/.gitkeep
+local-data/*
+!local-data/.gitkeep
 models/
 mlruns/
 *.joblib
