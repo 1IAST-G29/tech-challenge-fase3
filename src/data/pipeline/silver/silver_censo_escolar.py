@@ -28,6 +28,7 @@ BUCKET_SILVER = args['BUCKET_SILVER']
 
 FOLDER = "censo_escolar"
 YEARS = [2022, 2023, 2024]
+YEAR_2025 = 2025
 CSV_SEPARATOR = ";"
 CSV_ENCODING = "ISO-8859-1"
 COLUNAS_CENSO = [
@@ -74,6 +75,65 @@ def read_censo(spark, uri: str, ano: int) -> DataFrame:
         (F.col("TP_SITUACAO_FUNCIONAMENTO") == 1) & (F.col("QT_MAT_FUND_AI") > 0)
     )
     return dataframe.withColumn("ano", F.lit(ano))
+
+
+def read_censo_2025(spark, folder_uri: str) -> DataFrame:
+    """Lê os três arquivos de 2025 e os consolida no formato dos microdados anteriores."""
+
+    def read_csv(file_name: str, columns: list[str]) -> DataFrame:
+        return (
+            spark.read
+            .option("header", True)
+            .option("sep", CSV_SEPARATOR)
+            .option("encoding", CSV_ENCODING)
+            .csv(f"{folder_uri}/{file_name}")
+            .select([
+                F.col(column).cast("double").alias(column)
+                for column in columns
+            ])
+        )
+
+    school = read_csv(
+        "Tabela_Escola_2025_V2.csv",
+        [
+            "CO_ENTIDADE",
+            "CO_MUNICIPIO",
+            "TP_SITUACAO_FUNCIONAMENTO",
+            "TP_LOCALIZACAO",
+            "IN_INTERNET",
+            "IN_BIBLIOTECA",
+            "IN_SALA_LEITURA",
+            "QT_PROF_PEDAGOGIA",
+        ],
+    )
+    enrollment = read_csv(
+        "Tabela_Matricula_2025_V2.csv",
+        ["CO_ENTIDADE", "QT_MAT_FUND_AI", "QT_MAT_FUND_AI_INT"],
+    ).groupBy("CO_ENTIDADE").agg(
+        F.sum("QT_MAT_FUND_AI").alias("QT_MAT_FUND_AI"),
+        F.sum("QT_MAT_FUND_AI_INT").alias("QT_MAT_FUND_AI_INT"),
+    )
+    classes = read_csv(
+        "Tabela_Turma_2025_V2.csv",
+        ["CO_ENTIDADE", "QT_TUR_FUND_AI"],
+    ).groupBy("CO_ENTIDADE").agg(
+        F.sum("QT_TUR_FUND_AI").alias("QT_TUR_FUND_AI"),
+    )
+
+    return (
+        school.join(enrollment, "CO_ENTIDADE", "left")
+        .join(classes, "CO_ENTIDADE", "left")
+        .withColumn("QT_MAT_FUND_AI", F.coalesce(F.col("QT_MAT_FUND_AI"), F.lit(0)))
+        .withColumn("QT_MAT_FUND_AI_INT", F.coalesce(F.col("QT_MAT_FUND_AI_INT"), F.lit(0)))
+        .withColumn("QT_TUR_FUND_AI", F.coalesce(F.col("QT_TUR_FUND_AI"), F.lit(0)))
+        .withColumn("QT_DOC_FUND_AI", F.coalesce(F.col("QT_PROF_PEDAGOGIA"), F.lit(0)))
+        .filter(
+            (F.col("TP_SITUACAO_FUNCIONAMENTO") == 1)
+            & (F.col("QT_MAT_FUND_AI") > 0)
+        )
+        .withColumn("ano", F.lit(YEAR_2025))
+        .select([F.col(column) for column in COLUNAS_CENSO] + [F.col("ano")])
+    )
 
 
 def soma(coluna: str):
@@ -172,6 +232,7 @@ dataframes = [
     read_censo(spark, f"{BUCKET_BRONZE}/{FOLDER}/{ano}_microdados_ed_basica.csv", ano)
     for ano in YEARS
 ]
+dataframes.append(read_censo_2025(spark, f"{BUCKET_BRONZE}/{FOLDER}"))
 dataframe = reduce(lambda a, b: a.unionByName(b), dataframes)
 dataframe_municipal = transform_municipal(dataframe)
 load_path = load(dataframe_municipal, BUCKET_SILVER, FOLDER)
