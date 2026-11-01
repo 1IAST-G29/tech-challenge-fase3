@@ -19,8 +19,12 @@ htmlcov/
 # Dados e artefatos gerados
 data/*
 !data/.gitkeep
+/local/
+/local-data/
 reports/figures/*
 !reports/figures/.gitkeep
+local-data/*
+!local-data/.gitkeep
 models/
 mlruns/
 *.joblib
