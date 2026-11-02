@@ -18,7 +18,7 @@ ALUNOS_PATH = "alfabetizacao_inep/aluno"
 MUNICIPIOS_PATH = "alfabetizacao_inep/municipio"
 ESTADOS_PATH = "alfabetizacao_inep/estado"
 CENSO_PATH = "censo_escolar/censo_escolar_municipal"
-CENSO_2022_PATH = "censo_2022/censo_2022.csv"
+CENSO_2022_PATH = "censo_2022/censo_2022"
 FUNDEB_PATH = "fundeb/fundeb_anual"
 IDHM_PATH = "idhm/idhm_uf"
 GOLD_PATH = "alfabetizacao/base_alunos"
@@ -58,18 +58,6 @@ def read_silver(spark, bucket_silver: str, path: str) -> DataFrame:
     return spark.read.parquet(f"{bucket_silver}/{path}")
 
 
-def read_silver_csv(spark, bucket_silver: str, path: str) -> DataFrame:
-    """Lê a tabela CSV do Censo 2022 produzida pela Silver."""
-
-    return (
-        spark.read
-        .option("header", True)
-        .option("sep", ";")
-        .option("encoding", "UTF-8")
-        .csv(f"{bucket_silver}/{path}")
-    )
-
-
 def chave_municipio(coluna: str):
     """Normaliza município em minúsculas e sem acentos, como no notebook."""
 
@@ -82,6 +70,15 @@ def optional_numeric(dataframe: DataFrame, column: str):
     if column in dataframe.columns:
         return F.col(column).cast("double").alias(column)
     return F.lit(None).cast("double").alias(column)
+
+
+def fundeb_amount_column(dataframe: DataFrame) -> str:
+    """Aceita o schema atual e o schema legado da Silver do Fundeb."""
+
+    for column in ("fundeb_amount", "value"):
+        if column in dataframe.columns:
+            return column
+    raise ValueError("A Silver do Fundeb precisa conter fundeb_amount ou value.")
 
 
 def normalize_students(alunos: DataFrame) -> DataFrame:
@@ -261,12 +258,13 @@ def build_gold(
     base = base.join(F.broadcast(censo_2022_ref), ["city_code"], "left")
 
     # FUNDEB usa o mesmo ano e a chave textual normalizada.
+    amount_column = fundeb_amount_column(fundeb)
     fundeb_ref = (
         fundeb.select(
             F.col("year").cast("int").alias("year"),
             chave_municipio("city_name").alias("fundeb_city_name_norm"),
             F.col("state_abbreviation"),
-            F.col("value").cast("double").alias("fundeb_amount"),
+            F.col(amount_column).cast("double").alias("fundeb_amount"),
         )
         .dropDuplicates(["year", "fundeb_city_name_norm", "state_abbreviation"])
     )
@@ -348,7 +346,7 @@ alunos = read_silver(spark, BUCKET_SILVER, ALUNOS_PATH)
 municipios = read_silver(spark, BUCKET_SILVER, MUNICIPIOS_PATH)
 estados = read_silver(spark, BUCKET_SILVER, ESTADOS_PATH)
 censo = read_silver(spark, BUCKET_SILVER, CENSO_PATH)
-censo_2022 = read_silver_csv(spark, BUCKET_SILVER, CENSO_2022_PATH)
+censo_2022 = read_silver(spark, BUCKET_SILVER, CENSO_2022_PATH)
 fundeb = read_silver(spark, BUCKET_SILVER, FUNDEB_PATH)
 idhm = read_silver(spark, BUCKET_SILVER, IDHM_PATH)
 

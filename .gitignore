@@ -27,7 +27,6 @@ local-data/*
 !local-data/.gitkeep
 models/
 mlruns/
-*.joblib
 *.pkl
 
 # Segredos e configurações locais
