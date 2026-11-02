@@ -1,9 +1,9 @@
-"""Cria a base Gold destinada ao treinamento do modelo.
+"""Cria a base Gold destinada ao treinamento de modelos.
 
-O job lê a Gold consolidada por aluno, padroniza o alvo para ``alfabetizado``
-e remove variáveis que causariam vazamento de dados ou que identificam
-diretamente uma pessoa. A saída ainda preserva chaves territoriais úteis para
-auditoria e agregações posteriores.
+O job lê ``alfabetizacao/base_alunos``, produzida por
+``gold_consolidacao_alunos.py``, padroniza o alvo para ``alfabetizado`` e
+remove identificadores e variáveis que só ficam disponíveis depois da
+avaliação.
 """
 
 import sys
@@ -22,73 +22,102 @@ BUCKET_GOLD = args["BUCKET_GOLD"]
 
 INPUT_PATH = "alfabetizacao/base_alunos"
 OUTPUT_PATH = "ml/ml_dataset_alunos"
-TARGET_CANDIDATES = ("in_alfabetizado", "alfabetizado")
+TARGET_CANDIDATES = (
+    "student_is_literate",
+    "in_alfabetizado",
+    "alfabetizado",
+)
+YEAR_CANDIDATES = ("year", "ano")
 
-# Estas colunas revelam o resultado da avaliação ou só existem depois dela.
-PROHIBITED_COLUMNS = {
-    "vl_proficiencia_lp",
-    "proficiencia",
-    "co_caderno_lp",
+# Variáveis que revelam o resultado da avaliação ou foram calculadas a partir dele.
+POST_EVALUATION_COLUMNS = {
+    "student_exam_score",
+    "student_exam_weight",
+    "student_is_present_exam",
+    "student_took_exam",
     "in_presenca_lp",
     "in_preenchimento_lp",
+    "vl_proficiencia_lp",
+    "proficiencia",
+    "city_percentage_literate_students",
+    "city_average_exam_score",
+    "state_percentage_literate_students",
+    "state_average_exam_score",
 }
 
-# IDs servem para auditoria e joins, mas não devem ser usados diretamente como atributos.
-AUDIT_COLUMNS = {
-    "ano",
+# Identificadores individuais e nomes de localidades não são atributos adequados
+# para o modelo. O código municipal é uma exceção deliberada: o produto será
+# usado principalmente nos municípios já conhecidos e o modelo poderá aprender
+# o prior histórico de alfabetização de cada município.
+IDENTIFIER_COLUMNS = {
+    "student_id",
+    "school_id",
+    "state_code",
     "id_aluno",
     "id_escola",
     "id_municipio",
-    "state_code",
-    "sg_uf",
+    "co_municipio",
+    "co_uf",
+    "city_name",
+    "city_name_norm",
     "no_municipio",
 }
 
 
 def read_gold(spark: object, bucket_gold: str, path: str) -> DataFrame:
-    """Lê a base Gold consolidada em Parquet."""
+    """Lê a Gold consolidada em Parquet."""
 
     return spark.read.parquet(f"{bucket_gold}/{path}")
 
 
-def find_target(dataframe: DataFrame) -> str:
-    """Encontra o nome usado para o alvo na Gold consolidada."""
+def find_column(dataframe: DataFrame, candidates: tuple[str, ...], description: str) -> str:
+    """Encontra a primeira coluna disponível entre os nomes aceitos."""
 
-    for candidate in TARGET_CANDIDATES:
+    for candidate in candidates:
         if candidate in dataframe.columns:
             return candidate
     raise ValueError(
-        "A Gold não possui o alvo esperado. "
-        f"Colunas aceitas: {', '.join(TARGET_CANDIDATES)}"
+        f"A Gold não possui {description}. "
+        f"Colunas aceitas: {', '.join(candidates)}"
     )
 
 
 def build_ml_dataset(dataframe: DataFrame) -> DataFrame:
-    """Seleciona o alvo, as variáveis permitidas e as chaves de auditoria."""
+    """Converte a Gold consolidada em uma tabela pronta para treinamento."""
 
-    source_target = find_target(dataframe)
-    dataframe = dataframe.withColumn(
-        "alfabetizado",
-        F.col(source_target).cast("int"),
+    source_target = find_column(dataframe, TARGET_CANDIDATES, "o alvo de alfabetização")
+    source_year = find_column(dataframe, YEAR_CANDIDATES, "o ano")
+
+    dataframe = (
+        dataframe.withColumn("alfabetizado", F.col(source_target).cast("int"))
+        .withColumn("ano", F.col(source_year).cast("int"))
+        .filter(F.col("alfabetizado").isin(0, 1))
+        .filter(F.col("ano").isNotNull())
     )
-    dataframe = dataframe.filter(F.col("alfabetizado").isin(0, 1))
 
-    columns_to_drop = PROHIBITED_COLUMNS | set(TARGET_CANDIDATES)
-    columns_to_drop.discard(source_target)
-    columns_to_drop = {
-        column for column in columns_to_drop if column in dataframe.columns
-    }
-    dataframe = dataframe.drop(*columns_to_drop)
+    columns_to_drop = (
+        POST_EVALUATION_COLUMNS
+        | IDENTIFIER_COLUMNS
+        | set(TARGET_CANDIDATES)
+        | set(YEAR_CANDIDATES)
+    )
+    columns_to_drop.discard("alfabetizado")
+    columns_to_drop.discard("ano")
+    existing_columns = [column for column in columns_to_drop if column in dataframe.columns]
 
-    # Remove identificadores individuais; chaves territoriais ficam para auditoria.
-    individual_ids = {
-        "id_aluno",
-        "id_escola",
-        "co_municipio",
-        "co_uf",
-    }
-    existing_ids = [column for column in individual_ids if column in dataframe.columns]
-    return dataframe.drop(*existing_ids)
+    features = dataframe.drop(*existing_columns).select(
+        "ano",
+        "alfabetizado",
+        *[
+            column
+            for column in dataframe.columns
+            if column not in columns_to_drop
+            and column not in {"ano", "alfabetizado"}
+        ],
+    )
+    if "city_code" in features.columns:
+        features = features.withColumn("city_code", F.col("city_code").cast("string"))
+    return features
 
 
 def load(dataframe: DataFrame, bucket_gold: str, path: str) -> str:
@@ -108,6 +137,10 @@ job.init(JOB_NAME, args)
 gold = read_gold(spark, BUCKET_GOLD, INPUT_PATH)
 ml_dataset = build_ml_dataset(gold)
 load_path = load(ml_dataset, BUCKET_GOLD, OUTPUT_PATH)
-print(f"Dataset de treinamento gravado em {load_path}", flush=True)
+print(
+    f"Dataset de treinamento gravado em {load_path}: "
+    f"{ml_dataset.count()} registros e {len(ml_dataset.columns)} colunas",
+    flush=True,
+)
 
 job.commit()

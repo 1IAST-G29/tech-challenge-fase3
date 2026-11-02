@@ -103,7 +103,7 @@ def transform_fundeb(dataframe: DataFrame) -> DataFrame:
         "city_code",
         "city_name",
         "state_abbreviation",
-        F.col("valor.fundeb_amount").alias("value"),
+        F.col("valor.fundeb_amount").alias("fundeb_amount"),
     )
 
 
