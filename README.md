@@ -76,8 +76,7 @@ por `year`. Esse ambiente testa a transformação Spark e a escrita Parquet; a
 execução real no AWS Glue ainda deve ser validada na infraestrutura AWS.
 
 O job `src/data/pipeline/silver/silver_censo_2022.py` lê o Excel racial do Censo
-2022 e gera `local-data/silver/censo_2022/censo_2022.csv`, reproduzindo o formato
-exportado pelo notebook `censo_2022.ipynb`.
+2022 e gera Parquet em `local-data/silver/censo_2022/censo_2022/`.
 
 Na camada Gold, o fluxo está dividido em dois jobs: `gold_consolidacao_alunos.py`
 consolida os datasets Silver a partir dos alunos, e `gold_ml_dataset.py` cria
@@ -107,6 +106,13 @@ O script compara `DummyClassifier`, Regressão Logística, Random Forest e
 tabulares demográficos. Ele separa o último ano para teste e escolhe o melhor pelo
 recall da classe não alfabetizada. Os artefatos incluem a comparação entre os
 quatro modelos.
+
+## Treinamento no AWS Glue
+
+O mesmo `train_model.py` pode ser executado como um Glue Spark Job para ler a
+Gold no S3 e gravar `model.joblib` e as métricas no S3. Consulte o
+[guia de treinamento no Glue](docs/glue-training.md) para configurar o job,
+dependências e parâmetros na interface AWS.
 
 ## Próximas etapas
 

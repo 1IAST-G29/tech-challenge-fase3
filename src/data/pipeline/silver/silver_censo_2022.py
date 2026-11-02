@@ -1,8 +1,4 @@
-"""Normaliza os dados raciais municipais do Censo 2022.
-
-Este job reproduz a transformação do notebook ``censo_2022.ipynb`` e gera o
-arquivo ``censo_2022/censo_2022.csv`` na camada Silver.
-"""
+"""Normaliza os dados raciais municipais do Censo 2022 em Parquet."""
 
 import logging
 import os
@@ -27,7 +23,7 @@ BUCKET_SILVER = args["BUCKET_SILVER"]
 FOLDER = "censo_2022"
 FILE_NAME = "dados_raciais_2022_MU.xlsx"
 MUNICIPAL_FILE_NAME = "censo_2022_dados_municipais.csv"
-OUTPUT_NAME = "censo_2022.csv"
+OUTPUT_PATH = "censo_2022"
 RACIAL_COLUMNS = [
     "city_name",
     "city_code",
@@ -167,28 +163,11 @@ def build_censo_2022(
     return municipal.merge(racial, on="city_code", how="left")
 
 
-def load_csv(dataframe: pd.DataFrame, uri: str) -> str:
-    """Grava o CSV UTF-8 separado por ponto e vírgula na camada Silver."""
+def load_parquet(dataframe: pd.DataFrame, spark: object, uri: str) -> str:
+    """Converte o resultado Pandas para Spark e o grava em Parquet na Silver."""
 
-    parsed = urlparse(uri)
-    if parsed.scheme == "file":
-        output_path = Path(parsed.path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        dataframe.to_csv(output_path, index=False, sep=";", encoding="utf-8")
-        return uri
-
-    with tempfile.NamedTemporaryFile(suffix=".csv") as temporary_file:
-        dataframe.to_csv(
-            temporary_file.name,
-            index=False,
-            sep=";",
-            encoding="utf-8",
-        )
-        create_s3_client().upload_file(
-            temporary_file.name,
-            parsed.netloc,
-            parsed.path.lstrip("/"),
-        )
+    spark_dataframe = spark.createDataFrame(dataframe)
+    spark_dataframe.write.mode("overwrite").parquet(uri)
     return uri
 
 
@@ -199,14 +178,14 @@ job.init(JOB_NAME, args)
 
 input_uri = f"{BUCKET_BRONZE}/{FOLDER}/{FILE_NAME}"
 municipal_input_uri = f"{BUCKET_BRONZE}/{FOLDER}/{MUNICIPAL_FILE_NAME}"
-output_uri = f"{BUCKET_SILVER}/{FOLDER}/{OUTPUT_NAME}"
+output_uri = f"{BUCKET_SILVER}/{FOLDER}/{OUTPUT_PATH}"
 
 log.info("Lendo %s", input_uri)
 log.info("Lendo %s", municipal_input_uri)
 raw_racial_data = read_excel_source(input_uri)
 raw_municipal_data = read_csv_source(municipal_input_uri)
 normalized_data = build_censo_2022(raw_racial_data, raw_municipal_data)
-load_csv(normalized_data, output_uri)
+load_parquet(normalized_data, glue_context.spark_session, output_uri)
 log.info("Arquivo normalizado: %s (%d municípios)", output_uri, len(normalized_data))
 
 job.commit()
