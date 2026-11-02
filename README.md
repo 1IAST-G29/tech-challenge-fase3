@@ -54,12 +54,59 @@ pytest
 
 No Windows, ative o ambiente com `.venv\\Scripts\\activate`.
 
+## Teste local dos jobs Glue com Docker
+
+O diretório `local/` contém um executor que simula as classes mínimas do AWS Glue
+para rodar os jobs com Spark localmente. O `docker-compose.yml` cria o container
+Python/Java e um MinIO opcional para testes que precisem de S3.
+
+```bash
+docker compose build pipeline
+mkdir -p local-data/bronze/fundeb local-data/silver
+cp src/data/notebooks/fundeb/fundeb-por-municipio.csv local-data/bronze/fundeb/
+docker compose run --rm pipeline python local/run_glue_job.py \
+  src/data/pipeline/silver/silver_fundeb.py \
+  --JOB_NAME local-fundeb \
+  --BUCKET_BRONZE file:///workspace/local-data/bronze \
+  --BUCKET_SILVER file:///workspace/local-data/silver
+```
+
+O resultado será gravado em `local-data/silver/fundeb/fundeb_anual/`, particionado
+por `year`. Esse ambiente testa a transformação Spark e a escrita Parquet; a
+execução real no AWS Glue ainda deve ser validada na infraestrutura AWS.
+
+O job `src/data/pipeline/silver/silver_censo_2022.py` lê o Excel racial do Censo
+2022 e gera `local-data/silver/censo_2022/censo_2022.csv`, reproduzindo o formato
+exportado pelo notebook `censo_2022.ipynb`.
+
+Na camada Gold, o fluxo está dividido em dois jobs: `gold_consolidacao_alunos.py`
+consolida os datasets Silver a partir dos alunos, e `gold_ml_dataset.py` cria
+`ml/ml_dataset_alunos` para treinamento, removendo proficiência e campos
+disponíveis somente após a avaliação.
+
 ## Dados
 
 A base de modelagem será uma nova tabela Gold, `ml_dataset_alunos`, construída a
 partir das tabelas tratadas na Fase 2 e, quando necessário, de fontes públicas como
 IBGE e Censo Escolar. Dados completos, identificadores pessoais, credenciais e
 artefatos de modelos não devem ser enviados ao repositório.
+
+## Treinamento local
+
+Com a `ml_dataset_alunos` disponível localmente em Parquet, o modelo pode ser
+treinado com:
+
+```bash
+uv run python src/modeling/train_model.py \
+  --input local-data/gold/ml/ml_dataset_alunos \
+  --output artifacts/model
+```
+
+O script compara `DummyClassifier`, Regressão Logística, Random Forest e
+`HistGradientBoostingClassifier`, um modelo de boosting adequado para dados
+tabulares demográficos. Ele separa o último ano para teste e escolhe o melhor pelo
+recall da classe não alfabetizada. Os artefatos incluem a comparação entre os
+quatro modelos.
 
 ## Próximas etapas
 
