@@ -1,3 +1,4 @@
 src/data/**/*.csv filter=lfs diff=lfs merge=lfs -text
 src/data/**/*.xlsx filter=lfs diff=lfs merge=lfs -text
 bronze_data.zip filter=lfs diff=lfs merge=lfs -text
+src/modeling/results/** filter=lfs diff=lfs merge=lfs -text

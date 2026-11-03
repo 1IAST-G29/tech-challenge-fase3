@@ -149,7 +149,17 @@ def transform_municipal(dataframe: DataFrame) -> DataFrame:
                     .withColumn("escola_rural", F.when(F.col("TP_LOCALIZACAO") == 2, 1).otherwise(0))
                     .withColumn("espaco_leitura", F.when((F.col("IN_BIBLIOTECA") == 1) | (F.col("IN_SALA_LEITURA") == 1), 1).otherwise(0))
                     .withColumn("matriculas_turmas_zero", F.when(F.col("QT_TUR_FUND_AI") == 0, F.col("QT_MAT_FUND_AI")).otherwise(0))
-                    .withColumn("docentes_nulos", F.when(F.col("QT_DOC_FUND_AI").isNull(), 1).otherwise(0))
+                    # Nos arquivos do Censo, a ausência de docentes é representada por
+                    # nulo em alguns anos e por zero em outros. Ambas as situações
+                    # indicam escola com matrículas, mas sem docentes informados.
+                    .withColumn(
+                        "docentes_nulos",
+                        F.when(
+                            F.col("QT_DOC_FUND_AI").isNull()
+                            | (F.col("QT_DOC_FUND_AI") == 0),
+                            1,
+                        ).otherwise(0),
+                    )
                 )
 
     municipal = dataframe.groupBy("CO_MUNICIPIO", "ano").agg(

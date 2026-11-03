@@ -78,3 +78,73 @@ python src/modeling/train_model.py \
 ```
 
 O caminho local não precisa de Spark nem de credenciais AWS.
+
+## Alternativa distribuída com Spark ML
+
+`src/modeling/train_model_spark.py` é a opção indicada para a base completa no
+Glue. Ele executa o pré-processamento, o balanceamento de classes e o Random
+Forest com Spark ML nos executores, sem transferir a Gold inteira para Pandas
+no driver. Por isso, é mais apropriado para reduzir o tempo de execução e usar
+efetivamente os workers configurados no job.
+
+Ele compara o mesmo conjunto conceitual do treinamento Scikit-learn: baseline,
+regressão logística, Random Forest e árvores de gradiente. Spark ML não oferece
+o `HistGradientBoostingClassifier`; o candidato correspondente é registrado
+como `gradient_boosted_trees` e usa `GBTClassifier`. O pré-processamento é
+ajustado para cada perfil de modelo. Para reduzir tempo e custo, os candidatos
+são comparados em uma amostra temporal estratificada de 20%; apenas o vencedor
+é então treinado e avaliado na base completa. Para as árvores, `city_code` é
+representado por feature hashing em 512 dimensões, evitando milhares de
+atributos esparsos e a exigência de milhares de valores em `maxBins`. O
+`metrics.json` informa essa estratégia, guarda a comparação e o modelo
+vencedor é gravado em `model/`.
+
+Crie um segundo job com o mesmo motor, role e parâmetros anteriores, mas envie
+e selecione `src/modeling/train_model_spark.py`. Não é necessário informar
+`requirements-glue.txt`, pois o Spark ML já faz parte do runtime do Glue.
+
+Os artefatos serão gravados em um prefixo como:
+
+```text
+s3://<bucket>/modeling/alfabetizacao-spark/runs/<job-name>-<timestamp>/model/
+s3://<bucket>/modeling/alfabetizacao-spark/runs/<job-name>-<timestamp>/metrics.json
+s3://<bucket>/modeling/alfabetizacao-spark/runs/<job-name>-<timestamp>/aggregations.json
+```
+
+Para execução local, é necessário ter PySpark instalado:
+
+```bash
+spark-submit src/modeling/train_model_spark.py \
+  --input local-data/gold/ml/ml_dataset_alunos \
+  --output artifacts/model-spark
+```
+
+## Variante com transformações de atributos
+
+`src/modeling/train_model_spark_transformed.py` executa a mesma comparação de
+modelos Spark ML, mas aplica `log1p` antes da imputação nas colunas
+`households`, `area`, `population_total`, `fundeb_amount`, `school_count`,
+`total_enrollments`, `total_teachers`, `total_classes`, `pct_rural_schools`,
+`pct_full_time_enrollments` e `pct_enrollments_zero_class_schools`.
+Também força `education_network_type` a ser uma variável categórica e a aplica
+one-hot encoding.
+
+No Glue, selecione esse script e use os mesmos parâmetros `--BUCKET_GOLD` e
+`--BUCKET_MODEL`. Os resultados serão gravados em
+`alfabetizacao-spark-transformed/runs/`, e o `metrics.json` lista as
+transformações aplicadas.
+
+## Variante reduzida de atributos
+
+`src/modeling/train_model_spark_reduced.py` usa a mesma estratégia otimizada
+de seleção em amostra e treino completo do vencedor, mas remove antes do treino
+`households`, `total_teachers`, `total_enrollments`, `total_classes`,
+`fundeb_amount`, `school_count`, `hdi`, `hdi_income`,
+`income_per_capita_mean` e `pct_white`.
+
+Como a exclusão tem prioridade, `log1p` é aplicado somente em `area`,
+`population_total`, `pct_rural_schools`, `pct_full_time_enrollments` e
+`pct_enrollments_zero_class_schools`. A coluna `education_network_type` é
+forçada como categórica e recebe one-hot encoding. No Glue, use os mesmos
+parâmetros de bucket e selecione esse script; os artefatos ficam em
+`alfabetizacao-spark-reduced/runs/`.
