@@ -1,0 +1,245 @@
+{
+  "model": "logistic_regression",
+  "n_samples": 1965985,
+  "accuracy": 0.6296772355841983,
+  "precision_literate": 0.7186191990989482,
+  "recall_literate": 0.7249255137268932,
+  "f1_literate": 0.7217585814311577,
+  "precision_not_literate": 0.45041681685366547,
+  "recall_not_literate": 0.44265566871069467,
+  "f1_not_literate": 0.4465025190803133,
+  "roc_auc": 0.634885820372924,
+  "pr_auc": 0.7748479493245475,
+  "confusion_matrix": [
+    [
+      293656,
+      369740
+    ],
+    [
+      358309,
+      944280
+    ]
+  ],
+  "selected_model": "logistic_regression",
+  "selection_metric": "recall_not_literate",
+  "test_year": 2025,
+  "train_years": [
+    2023,
+    2024
+  ],
+  "features": [
+    "grade",
+    "area",
+    "literacy_rate",
+    "median_age",
+    "sex_ratio",
+    "aging_index",
+    "population_total",
+    "pct_black",
+    "pct_yellow",
+    "pct_brown",
+    "pct_indigenous",
+    "pct_rural_schools",
+    "pct_internet_schools",
+    "pct_library_schools",
+    "pct_reading_room_schools",
+    "pct_reading_space_schools",
+    "pct_full_time_enrollments",
+    "students_per_teacher",
+    "students_per_class",
+    "pct_enrollments_zero_class_schools",
+    "null_teacher_schools_count",
+    "year_idhm",
+    "year_join",
+    "hdi_life_expectancy",
+    "hdi_education",
+    "gini_index",
+    "age_lag_2y_basic_rate",
+    "education_network_type",
+    "city_code",
+    "state_abbreviation"
+  ],
+  "feature_types": {
+    "numeric": [
+      "grade",
+      "area",
+      "literacy_rate",
+      "median_age",
+      "sex_ratio",
+      "aging_index",
+      "population_total",
+      "pct_black",
+      "pct_yellow",
+      "pct_brown",
+      "pct_indigenous",
+      "pct_rural_schools",
+      "pct_internet_schools",
+      "pct_library_schools",
+      "pct_reading_room_schools",
+      "pct_reading_space_schools",
+      "pct_full_time_enrollments",
+      "students_per_teacher",
+      "students_per_class",
+      "pct_enrollments_zero_class_schools",
+      "null_teacher_schools_count",
+      "year_idhm",
+      "year_join",
+      "hdi_life_expectancy",
+      "hdi_education",
+      "gini_index",
+      "age_lag_2y_basic_rate"
+    ],
+    "categorical": [
+      "education_network_type",
+      "city_code",
+      "state_abbreviation"
+    ]
+  },
+  "feature_transformations": {
+    "excluded": [
+      "fundeb_amount",
+      "hdi",
+      "hdi_income",
+      "households",
+      "income_per_capita_mean",
+      "pct_white",
+      "school_count",
+      "total_classes",
+      "total_enrollments",
+      "total_teachers"
+    ],
+    "one_hot_encoded": [
+      "education_network_type"
+    ],
+    "log1p": [
+      "area",
+      "pct_enrollments_zero_class_schools",
+      "pct_full_time_enrollments",
+      "pct_rural_schools",
+      "population_total"
+    ]
+  },
+  "training_class_distribution": {
+    "not_literate": 1370107,
+    "literate": 1984530
+  },
+  "test_class_distribution": {
+    "n_samples": 1965985,
+    "not_literate": 663396,
+    "literate": 1302589,
+    "not_literate_rate": 0.33743695908157995,
+    "literate_rate": 0.66256304091842
+  },
+  "parameters": {
+    "random_forest_num_trees": 75,
+    "random_forest_max_depth": 10,
+    "gradient_boosted_trees_max_iter": 50,
+    "gradient_boosted_trees_max_depth": 5
+  },
+  "comparison": {
+    "dummy": {
+      "model": "dummy",
+      "n_samples": 394004,
+      "accuracy": 0.661670947503071,
+      "precision_literate": 0.661670947503071,
+      "recall_literate": 1.0,
+      "f1_literate": 0.7963922682734972,
+      "precision_not_literate": 0.0,
+      "recall_not_literate": 0.0,
+      "f1_not_literate": 0.0,
+      "roc_auc": 0.5,
+      "pr_auc": 0.661670947503071,
+      "confusion_matrix": [
+        [
+          0,
+          133303
+        ],
+        [
+          0,
+          260701
+        ]
+      ]
+    },
+    "logistic_regression": {
+      "model": "logistic_regression",
+      "n_samples": 394004,
+      "accuracy": 0.6089329042344748,
+      "precision_literate": 0.7284559047255803,
+      "recall_literate": 0.6520228154092236,
+      "f1_literate": 0.6881234212060366,
+      "precision_not_literate": 0.435331171377531,
+      "recall_not_literate": 0.5246618605732805,
+      "f1_not_literate": 0.47584025037420064,
+      "roc_auc": 0.6312889711835874,
+      "pr_auc": 0.7705154017991889,
+      "confusion_matrix": [
+        [
+          69939,
+          63364
+        ],
+        [
+          90718,
+          169983
+        ]
+      ]
+    },
+    "random_forest": {
+      "model": "random_forest",
+      "n_samples": 394004,
+      "accuracy": 0.6033187480330149,
+      "precision_literate": 0.7059187819261188,
+      "recall_literate": 0.6864607347114127,
+      "f1_literate": 0.6960537984037837,
+      "precision_not_literate": 0.4181750884410879,
+      "recall_not_literate": 0.44071776329114876,
+      "f1_not_literate": 0.42915059607293127,
+      "roc_auc": 0.6055360303252232,
+      "pr_auc": 0.7499866920862829,
+      "confusion_matrix": [
+        [
+          58749,
+          74554
+        ],
+        [
+          81740,
+          178961
+        ]
+      ]
+    },
+    "gradient_boosted_trees": {
+      "model": "gradient_boosted_trees",
+      "n_samples": 394004,
+      "accuracy": 0.6056055268474432,
+      "precision_literate": 0.6917061093715867,
+      "recall_literate": 0.7287428893636771,
+      "f1_literate": 0.7097416509607537,
+      "precision_not_literate": 0.4074524064888055,
+      "recall_not_literate": 0.36478548869867894,
+      "f1_not_literate": 0.3849402526054139,
+      "roc_auc": 0.5839230718804048,
+      "pr_auc": 0.7375709881885465,
+      "confusion_matrix": [
+        [
+          48627,
+          84676
+        ],
+        [
+          70717,
+          189984
+        ]
+      ]
+    }
+  },
+  "comparison_validation": {
+    "type": "stratified_temporal_sample",
+    "sample_fraction": 0.2,
+    "selection_test_records": 394004,
+    "winner_retrained_on_full_training_set": true
+  },
+  "tree_preprocessing": {
+    "city_code": "feature_hashed_512_dimensions",
+    "other_categorical_columns": "one_hot_encoded"
+  },
+  "elapsed_seconds": 327.77,
+  "model_path": "s3://tech3-ml/etl/gold/alfabetizacao-spark-reduced/runs/train_model_spark_reduced-20261103T021933Z/model"
+}

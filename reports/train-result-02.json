@@ -1,0 +1,241 @@
+{
+  "model": "logistic_regression",
+  "n_samples": 1965985,
+  "accuracy": 0.6035249505972833,
+  "precision_literate": 0.7364101182852748,
+  "recall_literate": 0.6254920009304547,
+  "f1_literate": 0.6764342780477397,
+  "precision_not_literate": 0.43248657502629156,
+  "recall_not_literate": 0.5603922845479925,
+  "f1_not_literate": 0.4882008262704631,
+  "roc_auc": 0.6333124284666527,
+  "pr_auc": 0.7751573799907989,
+  "confusion_matrix": [
+    [
+      371762,
+      291634
+    ],
+    [
+      487830,
+      814759
+    ]
+  ],
+  "selected_model": "logistic_regression",
+  "selection_metric": "recall_not_literate",
+  "test_year": 2025,
+  "train_years": [
+    2023,
+    2024
+  ],
+  "features": [
+    "grade",
+    "education_network_type",
+    "households",
+    "area",
+    "literacy_rate",
+    "median_age",
+    "sex_ratio",
+    "aging_index",
+    "population_total",
+    "pct_white",
+    "pct_black",
+    "pct_yellow",
+    "pct_brown",
+    "pct_indigenous",
+    "fundeb_amount",
+    "school_count",
+    "total_enrollments",
+    "total_teachers",
+    "total_classes",
+    "pct_rural_schools",
+    "pct_internet_schools",
+    "pct_library_schools",
+    "pct_reading_room_schools",
+    "pct_reading_space_schools",
+    "pct_full_time_enrollments",
+    "students_per_teacher",
+    "students_per_class",
+    "pct_enrollments_zero_class_schools",
+    "null_teacher_schools_count",
+    "year_idhm",
+    "year_join",
+    "hdi",
+    "hdi_life_expectancy",
+    "hdi_education",
+    "hdi_income",
+    "gini_index",
+    "income_per_capita_mean",
+    "age_lag_2y_basic_rate",
+    "city_code",
+    "state_abbreviation"
+  ],
+  "feature_types": {
+    "numeric": [
+      "grade",
+      "education_network_type",
+      "households",
+      "area",
+      "literacy_rate",
+      "median_age",
+      "sex_ratio",
+      "aging_index",
+      "population_total",
+      "pct_white",
+      "pct_black",
+      "pct_yellow",
+      "pct_brown",
+      "pct_indigenous",
+      "fundeb_amount",
+      "school_count",
+      "total_enrollments",
+      "total_teachers",
+      "total_classes",
+      "pct_rural_schools",
+      "pct_internet_schools",
+      "pct_library_schools",
+      "pct_reading_room_schools",
+      "pct_reading_space_schools",
+      "pct_full_time_enrollments",
+      "students_per_teacher",
+      "students_per_class",
+      "pct_enrollments_zero_class_schools",
+      "null_teacher_schools_count",
+      "year_idhm",
+      "year_join",
+      "hdi",
+      "hdi_life_expectancy",
+      "hdi_education",
+      "hdi_income",
+      "gini_index",
+      "income_per_capita_mean",
+      "age_lag_2y_basic_rate"
+    ],
+    "categorical": [
+      "city_code",
+      "state_abbreviation"
+    ]
+  },
+  "training_class_distribution": {
+    "not_literate": 1370107,
+    "literate": 1984530
+  },
+  "test_class_distribution": {
+    "n_samples": 1965985,
+    "not_literate": 663396,
+    "literate": 1302589,
+    "not_literate_rate": 0.33743695908157995,
+    "literate_rate": 0.66256304091842
+  },
+  "parameters": {
+    "random_forest_num_trees": 75,
+    "random_forest_max_depth": 10,
+    "gradient_boosted_trees_max_iter": 50,
+    "gradient_boosted_trees_max_depth": 5
+  },
+  "comparison": {
+    "dummy": {
+      "model": "dummy",
+      "n_samples": 394004,
+      "accuracy": 0.661670947503071,
+      "precision_literate": 0.661670947503071,
+      "recall_literate": 1.0,
+      "f1_literate": 0.7963922682734972,
+      "precision_not_literate": 0.0,
+      "recall_not_literate": 0.0,
+      "f1_not_literate": 0.0,
+      "roc_auc": 0.5,
+      "pr_auc": 0.661670947503071,
+      "confusion_matrix": [
+        [
+          0,
+          133303
+        ],
+        [
+          0,
+          260701
+        ]
+      ]
+    },
+    "logistic_regression": {
+      "model": "logistic_regression",
+      "n_samples": 394004,
+      "accuracy": 0.5840676744398534,
+      "precision_literate": 0.7496004207183147,
+      "recall_literate": 0.5576810215534271,
+      "f1_literate": 0.6395530677106818,
+      "precision_not_literate": 0.4235791052236941,
+      "recall_not_literate": 0.6356721154062549,
+      "f1_not_literate": 0.5083920048717125,
+      "roc_auc": 0.6303183180496132,
+      "pr_auc": 0.7707413974319619,
+      "confusion_matrix": [
+        [
+          84737,
+          48566
+        ],
+        [
+          115313,
+          145388
+        ]
+      ]
+    },
+    "random_forest": {
+      "model": "random_forest",
+      "n_samples": 394004,
+      "accuracy": 0.6028720520603852,
+      "precision_literate": 0.6982671054383596,
+      "recall_literate": 0.7040364248698701,
+      "f1_literate": 0.7011398971647732,
+      "precision_not_literate": 0.4116767950956546,
+      "recall_not_literate": 0.4050246431063067,
+      "f1_not_literate": 0.40832362772828346,
+      "roc_auc": 0.6045855354398757,
+      "pr_auc": 0.7486568896527002,
+      "confusion_matrix": [
+        [
+          53991,
+          79312
+        ],
+        [
+          77158,
+          183543
+        ]
+      ]
+    },
+    "gradient_boosted_trees": {
+      "model": "gradient_boosted_trees",
+      "n_samples": 394004,
+      "accuracy": 0.5923569303864935,
+      "precision_literate": 0.720849257274998,
+      "recall_literate": 0.6265530243458982,
+      "f1_literate": 0.670401539916971,
+      "precision_not_literate": 0.4184318363738456,
+      "recall_not_literate": 0.5254795465968508,
+      "f1_not_literate": 0.4658856236427909,
+      "roc_auc": 0.6091635279038133,
+      "pr_auc": 0.7510729373885923,
+      "confusion_matrix": [
+        [
+          70048,
+          63255
+        ],
+        [
+          97358,
+          163343
+        ]
+      ]
+    }
+  },
+  "comparison_validation": {
+    "type": "stratified_temporal_sample",
+    "sample_fraction": 0.2,
+    "selection_test_records": 394004,
+    "winner_retrained_on_full_training_set": true
+  },
+  "tree_preprocessing": {
+    "city_code": "feature_hashed_512_dimensions",
+    "other_categorical_columns": "one_hot_encoded"
+  },
+  "elapsed_seconds": 393.81,
+  "model_path": "s3://tech-challenge-f3/modeling/alfabetizacao-spark/runs/Treino  Modelo Spark ML V2-20261103T003853Z/model"
+}
