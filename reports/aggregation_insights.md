@@ -17,8 +17,9 @@ As taxas observadas existem apenas porque estes resultados foram calculados no c
 |---|---|---|
 | `reports/aggregations-01.json` | Resultado distinto | HistGradientBoosting do treino 1. |
 | `reports/aggregations-02.json` | Resultado distinto | Regressão logística do treino 2, modelo vencedor. |
+| `reports/aggregations-03.json` | Resultado distinto | Regressão logística do treino 3, com variáveis reduzidas e transformações. |
 
-Portanto, há **dois** resultados de agregação disponíveis. A agregação específica do terceiro treinamento não está disponível na pasta `reports/`.
+Portanto, há **três** resultados de agregação disponíveis, um para cada experimento.
 
 Todos possuem 1.965.985 registros, 5.555 municípios, 27 UFs e dois tipos de rede de ensino.
 
@@ -71,17 +72,25 @@ Para reduzir instabilidade causada por amostras muito pequenas, a tabela abaixo 
 
 Esses códigos devem ser usados como ponto de partida para investigação, não como diagnóstico. O município 2211100, por exemplo, apresenta risco médio alto, mas taxa real consideravelmente menor, sinalizando a necessidade de analisar qualidade dos dados, contexto local e calibração antes de priorizar recursos.
 
-## Comparação entre os dois resultados distintos
+## Comparação entre os três resultados
 
-| Indicador | Regressão logística, modelo vencedor | HistGradientBoosting, treino 1 |
+| Indicador | HistGradientBoosting, treino 1 | Regressão logística, treino 2 (vencedor) | Regressão logística reduzida, treino 3 |
+|---|---:|---:|---:|
+| Taxa real de não alfabetização | 33,74% | 33,74% | 33,74% |
+| Taxa prevista como não alfabetizado | 46,82% | 43,72% | 33,16% |
+| Risco médio previsto | 49,26% | 46,12% | 43,21% |
+
+O HistGradientBoosting gerou mais alertas que o modelo vencedor, excedendo a taxa observada em 13,08 pontos percentuais. A regressão logística do treino 2 também excedeu a taxa observada em 9,98 pontos percentuais, em linha com a prioridade de recall para alunos não alfabetizados. Já o treino 3 previu 0,58 ponto percentual menos casos que a taxa observada, comportamento mais conservador que ajuda a explicar seu recall menor (44,27%, ante 56,04% no modelo vencedor).
+
+| Comparação de risco municipal | Correlação ponderada por alunos | Diferença absoluta média por município |
 |---|---:|---:|
-| Taxa real de não alfabetização | 33,74% | 33,74% |
-| Taxa prevista como não alfabetizado | 43,72% | 46,82% |
-| Risco médio previsto | 46,12% | 49,26% |
+| Treino 1 × Treino 2 | 0,78 | 11,46 p.p. |
+| Treino 1 × Treino 3 | 0,76 | 12,31 p.p. |
+| Treino 2 × Treino 3 | **0,96** | **3,82 p.p.** |
 
-O HistGradientBoosting gerou mais alertas que o modelo vencedor, excedendo a taxa observada em 13,08 pontos percentuais. A regressão logística também é mais conservadora nesse aspecto e foi escolhida por apresentar melhor equilíbrio entre F1 da classe prioritária, PR-AUC, interpretabilidade e custo operacional.
+Os dois modelos de regressão logística apresentam forte concordância nos padrões territoriais. Ambos colocam, por exemplo, Sergipe, Rio Grande do Norte e Bahia entre as UFs de maior risco; e os municípios `2907202` e `2902104` no topo do risco entre os grupos com ao menos 500 alunos. O treino 3, porém, reduziu sistematicamente o risco estimado e os alertas, sobretudo na rede de tipo 2: classificou 10,04% desse grupo como não alfabetizado, frente a 43,22% no modelo vencedor, embora a taxa observada seja 35,33%.
 
-Ao comparar os riscos municipais dos dois resultados, a correlação ponderada pelo número de alunos é de **0,78**. Há concordância relevante sobre padrões territoriais amplos, mas a diferença absoluta média de risco é de **11,46 pontos percentuais** por município. Assim, rankings municipais não devem depender de um único modelo sem acompanhamento contínuo.
+Essa diferença é coerente com a perda de recall do treino 3 e reforça a escolha do modelo do treino 2: ele preserva maior cobertura da população prioritária sem o excesso de alertas do HistGradientBoosting. Rankings municipais não devem depender de um único modelo sem acompanhamento contínuo, calibração e revisão humana.
 
 ## Recomendações de uso
 
@@ -90,4 +99,4 @@ Ao comparar os riscos municipais dos dois resultados, a correlação ponderada p
 3. Ajustar o limiar de classificação de acordo com a capacidade real de atendimento pedagógico.
 4. Monitorar erro, precisão, recall e calibração por UF, tipo de rede e município.
 5. Usar os rankings para investigação e alocação de apoio, com revisão humana; não para rotular alunos, escolas ou profissionais.
-6. Gerar e guardar a agregação do terceiro treinamento para completar a comparação entre todos os experimentos.
+6. Manter as agregações dos três treinamentos a cada reexecução, para acompanhar a estabilidade dos rankings e da calibração territorial.
